@@ -45,7 +45,7 @@
 				<plugin>
 					<groupId>org.owasp</groupId>
 					<artifactId>dependency-check-maven</artifactId>
-					<version>6.0.2</version>
+					<version>7.1.1</version>
 				</plugin>
 			</plugins>
 
@@ -88,7 +88,6 @@
 			<plugin>
 				<groupId>org.owasp</groupId>
 				<artifactId>dependency-check-maven</artifactId>
-				<version>6.0.2</version>
 				<executions>
 					<execution>
 						<goals>
