@@ -1,0 +1,39 @@
+pipeline {
+    agent any
+    tools {
+        maven "my-maven"       
+    }
+    stages {
+         // Clone from Git
+        stage("Clone App from Git"){
+            steps{
+                echo "====++++  Clone App from Git ++++===="
+                git branch:"01-Quality-Tests", url: "https://github.com/mromdhani/devops-3-ci-cd.git"
+            }          
+        }
+        // Build and Quality Tests)
+        stage("Quality Tests"){
+            steps{
+                echo "====++++  Performin Quality Checks ++++===="  
+
+                dir("/var/jenkins_home/workspace/ci-cd-01-unit-tests/01-Quality-Tests/bookstore-fullstack/bookstore-backend") {
+                  sh "mvn clean compile checkstyle:checkstyle pmd:pmd findbugs:findbugs"
+                }               
+            }          
+        }     
+    }
+	// Reporting for Quality Tests (using Warnings Next Generation Plugin)
+    post {
+        always {
+                recordIssues(
+                          enabledForFailure: true, aggregatingResults: true,
+                          tools: [
+                              java(),
+                              checkStyle(pattern: '**/target/checkstyle-result.xml', reportEncoding: 'UTF-8'),
+                              pmdParser(pattern: '**/target/pmd.xml'),
+                              spotBugs(pattern: '**/target/findbugsXml.xml')                             
+                        ]
+                   )
+        }       
+    }
+}
