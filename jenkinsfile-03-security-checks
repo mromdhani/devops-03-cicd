@@ -1,0 +1,131 @@
+pipeline {
+    agent any
+    tools {
+        maven "my-maven"       
+    }
+    stages {
+         // Clone from Git
+        stage("Clone App from Git"){
+            steps{
+                echo "====++++  Clone App from Git ++++===="
+                git branch:"02-Unit-Tests", url: "https://github.com/mromdhani/devops-03-cicd.git"
+            }          
+        }
+        // Build and Quality Tests
+        stage("Quality Tests"){
+            steps{
+                echo "====++++  Performing Quality Checks ++++===="  
+
+                dir("${WORKSPACE}/02-Unit-Tests/bookstore-fullstack/bookstore-backend") {
+                  sh "mvn clean compile checkstyle:checkstyle pmd:pmd findbugs:findbugs"
+                }               
+            }
+            // Reporting for Quality Tests (using Warnings Next Generation Plugin)
+            post {
+                always {
+                    recordIssues(
+                          enabledForFailure: true, aggregatingResults: true,
+                          tools: [
+                              java(),
+                              checkStyle(pattern: '**/target/checkstyle-result.xml', reportEncoding: 'UTF-8'),
+                              pmdParser(pattern: '**/target/pmd.xml'),
+                              spotBugs(pattern: '**/target/findbugsXml.xml')                             
+                        ]
+                    )
+                }       
+            }			
+        } 
+        // Unit Tests
+        stage("Unit Tests"){
+            steps{
+                echo "====++++  Performing Unit Tests ++++===="  
+
+                dir("${WORKSPACE}/02-Unit-Tests/bookstore-fullstack/bookstore-backend") {
+                  sh "mvn clean test"
+                }               
+            }
+            // Reporting for unit Tests
+            post {
+                always {
+                     junit testResults: '**/target/surefire-reports/*.xml', allowEmptyResults: false 
+                }       
+            }			
+        } 		
+    }	
+}
+pipeline {
+    agent any
+    tools {
+        maven "my-maven"       
+    }
+    stages {
+         // Clone from Git
+        stage("Clone App from Git"){
+            steps{
+                echo "====++++  Clone App from Git ++++===="
+                git branch:"03-Security-Checks", url: "https://github.com/mromdhani/devops-03-cicd.git"
+            }          
+        }
+        // Build and Quality Tests
+        stage("Quality Tests"){
+            steps{
+                echo "====++++  Performing Quality Checks ++++===="  
+
+                dir("${WORKSPACE}/03-Security-Checks/bookstore-fullstack/bookstore-backend") {
+                  sh "mvn clean compile checkstyle:checkstyle pmd:pmd"
+                }               
+            }
+            // Reporting for Quality Tests (using Warnings Next Generation Plugin)
+            post {
+                always {
+                    recordIssues(
+                          enabledForFailure: true, aggregatingResults: true,
+                          tools: [
+                              java(),
+                              checkStyle(pattern: '**/target/checkstyle-result.xml', reportEncoding: 'UTF-8'),
+                              pmdParser(pattern: '**/target/pmd.xml'),
+                                                          
+                        ]
+                    )
+                }       
+            }			
+        } 
+        // Unit Tests
+        stage("Unit Tests"){
+            steps{
+                echo "====++++  Performing Unit Tests ++++===="  
+
+                dir("${WORKSPACE}/03-Security-Checks/bookstore-fullstack/bookstore-backend") {
+                  sh "mvn clean test"
+                }               
+            }
+            // Reporting for unit Tests
+            post {
+                always {
+                     junit testResults: '**/target/surefire-reports/*.xml', allowEmptyResults: false 
+                }       
+            }			
+        } 
+        // Security Checks
+        stage("Security Checks"){
+            steps{
+                echo "====++++  Performing Security Checks ++++===="  
+
+                dir("${WORKSPACE}/03-Security-Checks/bookstore-fullstack/bookstore-backend") {
+                  sh "clean compile spotbugs:spotbugs"
+                }               
+            }
+             // Reporting for Security Checks
+            post {
+                always {
+                    recordIssues(
+                          enabledForFailure: true, aggregatingResults: true,
+                          tools: [
+                              spotBugs(pattern: '**/target/findbugsXml.xml')                                                           
+                        ]
+                    )
+                }       
+            }					
+        } 				
+    }	
+}
