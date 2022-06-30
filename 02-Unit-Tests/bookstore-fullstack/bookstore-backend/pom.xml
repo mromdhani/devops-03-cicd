@@ -40,6 +40,16 @@
 	</dependencies>
 
 	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.owasp</groupId>
+					<artifactId>dependency-check-maven</artifactId>
+					<version>7.1.1</version>
+				</plugin>
+			</plugins>
+
+		</pluginManagement>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
@@ -87,8 +97,8 @@
 					</execution>
 				</executions>
 				<configuration>
-				<failBuildOnCVSS>11</failBuildOnCVSS> 
-                    
+					<failBuildOnCVSS>11</failBuildOnCVSS>
+
 					<!-- Generate all report formats -->
 					<format>ALL</format>
 					<!-- Don't use Nexus Analyzer -->
