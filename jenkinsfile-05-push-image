@@ -4,9 +4,12 @@ pipeline {
         maven "my-maven"       
     }
     environment {
+	    REGISTRY = "127.0.0.1:8082"
         NAME = "bookstorebackend"
         VERSION = "${env.BUILD_ID}"
         IMAGE = "${NAME}:${VERSION}"
+		REG_USERNAME = "admin"
+		REG_PASSWORD = "admin"
     }
     stages {
          // Clone from Git
@@ -16,6 +19,7 @@ pipeline {
                 git branch:"04-Build-Image", url: "https://github.com/mromdhani/devops-03-cicd.git"
             }          
         }
+        
          // Build and Quality Tests
         stage("Quality Tests"){
             steps{
@@ -96,16 +100,30 @@ pipeline {
                 }       
             }					
         } 
+        
         //Build Docker Image
         stage("Build Docker Image"){
             steps{
                 echo "====++++  Building Docker Image ++++===="
                 dir("${WORKSPACE}/04-Build-Image/bookstore-fullstack/bookstore-backend") {
-                  sh "docker build -t ${NAME} ."
-                  sh "docker tag ${NAME}:latest ${NAME}:${VERSION}"
+                  sh "docker build -t ${REGISTRY}/${NAME} ."
+                  sh "docker tag ${REGISTRY}/${NAME}:latest ${REGISTRY}/${NAME}:${VERSION}"
                 }   
                 
             }          
+        }
+     
+         //Push Docker Image to Nexus Docker Registry
+        stage("Push Image to Nexus"){
+            steps{
+                echo "====++++  Pushing Docker Image ++++===="
+                
+                  sh "docker login -u ${REG_USERNAME} -p ${REG_PASSWORD} ${REGISTRY}"
+                  sh "docker push  ${REGISTRY}/${NAME}:latest"
+                  sh "docker push ${REGISTRY}/${NAME}:${VERSION}"
+                  sh "docker logout ${REGISTRY}:8082"
+            }   
+                
         }
    			
     }	
