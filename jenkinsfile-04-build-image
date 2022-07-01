@@ -81,7 +81,7 @@ pipeline {
                     
                 }   
             }
-             // Reporting for Security Checks
+            // Reporting for Security Checks
             post {
                 always {
                      dir("${WORKSPACE}/03-Security-Checks/bookstore-fullstack/bookstore-backend") {
